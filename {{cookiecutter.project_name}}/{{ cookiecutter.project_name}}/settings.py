@@ -8,17 +8,26 @@ from pathlib import Path
 import sentry_sdk
 from environs import Env
 from marshmallow.validate import Email
-from marshmallow.validate import OneOf
-from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 
-from falco_toolbox.sentry import sentry_profiles_sampler
-from falco_toolbox.sentry import sentry_traces_sampler
+import tomli
 
 import djp
 
 # 0. Setup
 # --------------------------------------------------------------------------------------------
+
+def get_project_version():
+    # Path to the pyproject.toml file in the root of the project
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    toml_path = os.path.join(project_root, 'pyproject.toml')
+
+    # Open the pyproject.toml and parse the version
+    with open(toml_path, 'rb') as f:
+        toml_data = tomli.load(f)
+
+    return toml_data['project']['version']
+
+VERSION = get_project_version()
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -257,7 +266,6 @@ TEMPLATES = [
             ],
             "builtins": [
                 "template_partials.templatetags.partials",
-                "heroicons.templatetags.heroicons",
             ],
             "debug": DEBUG,
             "loaders": [
@@ -360,24 +368,6 @@ Q_CLUSTER = {
     "bulk": 10,
     "orm": "default",
 }
-
-# sentry
-if (SENTRY_DSN := env.url("SENTRY_DSN", default=None)).scheme and not DEBUG:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN.geturl(),
-        environment=env.str(
-            "SENTRY_ENV",
-            default="development",
-            validate=OneOf(["development", "production"]),
-        ),
-        integrations=[
-            DjangoIntegration(),
-            LoggingIntegration(event_level=None, level=None),
-        ],
-        traces_sampler=sentry_traces_sampler,
-        profiles_sampler=sentry_profiles_sampler,
-        send_default_pii=True,
-    )
 
 # 4. Project Settings
 # -----------------------------------------------------------------------------------------------------
