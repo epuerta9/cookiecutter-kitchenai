@@ -1,0 +1,8 @@
+{
+  "project": "kitchenai-demo",
+  "project_name": "{{ cookiecutter.project.lower()|replace(' ', '_')|replace('-', '_')|replace('.', '_')|trim() }}",
+  "project_cookbook": "{{ cookiecutter.project_name }}_cookbook",
+  "author_name": "author",
+  "author_email": "author@example.com",
+  "secret_key": "secret1"
+}
